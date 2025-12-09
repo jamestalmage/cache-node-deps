@@ -13,6 +13,6 @@ outputs:
     description: 'A boolean value to indicate if a cache was hit.'
 runs:
   using: 'node24'
-  main: 'dist/setup/index.js'
+  main: 'dist/cache-restore/index.js'
   post: 'dist/cache-save/index.js'
   post-if: success()
