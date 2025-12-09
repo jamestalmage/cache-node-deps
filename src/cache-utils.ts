@@ -4,7 +4,15 @@ import * as cache from '@actions/cache';
 import * as glob from '@actions/glob';
 import path from 'path';
 import fs from 'fs';
-import {unique} from './util';
+
+export const unique = () => {
+  const encountered = new Set();
+  return (value: unknown): boolean => {
+    if (encountered.has(value)) return false;
+    encountered.add(value);
+    return true;
+  };
+};
 
 export interface PackageManagerInfo {
   name: string;

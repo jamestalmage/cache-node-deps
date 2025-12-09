@@ -5,7 +5,8 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 
-import {State} from './constants';
+import {PackageManager, State} from './constants';
+
 import {
   getCacheDirectories,
   getPackageManagerInfo,
@@ -14,7 +15,7 @@ import {
 } from './cache-utils';
 
 export const restoreCache = async (
-  packageManager: string,
+  packageManager: PackageManager,
   cacheDependencyPath: string
 ) => {
   const packageManagerInfo = await getPackageManagerInfo(packageManager);

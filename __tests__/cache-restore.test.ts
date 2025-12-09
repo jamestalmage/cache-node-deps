@@ -5,7 +5,8 @@ import * as glob from '@actions/glob';
 import osm from 'os';
 
 import * as utils from '../src/cache-utils';
-import {restoreCache} from '../src/cache-restore';
+import {restoreCache} from '../src/restore-cache';
+import {PackageManager} from '../src/constants';
 
 describe('cache-restore', () => {
   process.env['GITHUB_WORKSPACE'] = path.join(__dirname, 'data');
@@ -115,9 +116,9 @@ describe('cache-restore', () => {
     it.each([['npm7'], ['npm6'], ['pnpm6'], ['yarn1'], ['yarn2'], ['random']])(
       'Throw an error because %s is not supported',
       async packageManager => {
-        await expect(restoreCache(packageManager, '')).rejects.toThrow(
-          `Caching for '${packageManager}' is not supported`
-        );
+        await expect(
+          restoreCache(packageManager as PackageManager, '')
+        ).rejects.toThrow(`Caching for '${packageManager}' is not supported`);
       }
     );
   });
@@ -139,7 +140,7 @@ describe('cache-restore', () => {
           }
         });
 
-        await restoreCache(packageManager, '');
+        await restoreCache(packageManager as PackageManager, '');
         expect(hashFilesSpy).toHaveBeenCalled();
         expect(infoSpy).toHaveBeenCalledWith(
           `Cache restored from key: node-cache-${platform}-${arch}-${packageManager}-${fileHash}`
@@ -158,7 +159,7 @@ describe('cache-restore', () => {
       ['yarn', '1.2.3', yarnFileHash],
       ['npm', '', npmFileHash],
       ['pnpm', '', pnpmFileHash]
-    ])(
+    ] as [PackageManager, string, string][])(
       'dependencies are changed %s',
       async (packageManager, toolVersion, fileHash) => {
         getCommandOutputSpy.mockImplementation((command: string) => {

@@ -89071,20 +89071,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
+exports.cacheSave = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const cache = __importStar(__nccwpck_require__(5116));
 const constants_1 = __nccwpck_require__(7242);
 const cache_utils_1 = __nccwpck_require__(4673);
-// Catch and log any unhandled exceptions.  These exceptions can leak out of the uploadChunk method in
-// @actions/toolkit when a failed upload closes the file descriptor causing any in-process reads to
-// throw an uncaught exception.  Instead of failing this action, just warn.
-process.on('uncaughtException', e => {
-    const warningPrefix = '[warning]';
-    core.info(`${warningPrefix}${e.message}`);
-});
 // Added early exit to resolve issue with slow post action step:
-function run(earlyExit) {
+function cacheSave(earlyExit) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const cacheLock = core.getState(constants_1.State.CachePackageManager);
@@ -89103,7 +89096,7 @@ function run(earlyExit) {
         }
     });
 }
-exports.run = run;
+exports.cacheSave = cacheSave;
 const cachePackages = (packageManager) => __awaiter(void 0, void 0, void 0, function* () {
     const state = core.getState(constants_1.State.CacheMatchedKey);
     const primaryKey = core.getState(constants_1.State.CachePrimaryKey);
@@ -89129,7 +89122,6 @@ const cachePackages = (packageManager) => __awaiter(void 0, void 0, void 0, func
     }
     core.info(`Cache saved with the key: ${primaryKey}`);
 });
-run(true);
 
 
 /***/ }),
@@ -89175,14 +89167,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isCacheFeatureAvailable = exports.isGhes = exports.repoHasYarnBerryManagedDependencies = exports.getCacheDirectories = exports.resetProjectDirectoriesMemoized = exports.getPackageManagerInfo = exports.getCommandOutputNotEmpty = exports.getCommandOutput = exports.supportedPackageManagers = void 0;
+exports.isCacheFeatureAvailable = exports.isGhes = exports.repoHasYarnBerryManagedDependencies = exports.getCacheDirectories = exports.resetProjectDirectoriesMemoized = exports.getPackageManagerInfo = exports.getCommandOutputNotEmpty = exports.getCommandOutput = exports.supportedPackageManagers = exports.unique = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const exec = __importStar(__nccwpck_require__(5236));
 const cache = __importStar(__nccwpck_require__(5116));
 const glob = __importStar(__nccwpck_require__(7206));
 const path_1 = __importDefault(__nccwpck_require__(6928));
 const fs_1 = __importDefault(__nccwpck_require__(9896));
-const util_1 = __nccwpck_require__(4527);
+const unique = () => {
+    const encountered = new Set();
+    return (value) => {
+        if (encountered.has(value))
+            return false;
+        encountered.add(value);
+        return true;
+    };
+};
+exports.unique = unique;
 exports.supportedPackageManagers = {
     npm: {
         name: 'npm',
@@ -89272,7 +89273,7 @@ const getProjectDirectoriesFromCacheDependencyPath = (cacheDependencyPath) => __
     const cacheDependenciesPaths = yield globber.glob();
     const existingDirectories = cacheDependenciesPaths
         .map(path_1.default.dirname)
-        .filter((0, util_1.unique)())
+        .filter((0, exports.unique)())
         .map(dirName => fs_1.default.realpathSync(dirName))
         .filter(directory => fs_1.default.lstatSync(directory).isDirectory());
     if (!existingDirectories.length)
@@ -89295,7 +89296,7 @@ const getCacheDirectoriesFromCacheDependencyPath = (packageManagerInfo, cacheDep
         return cacheFolderPath;
     })));
     // uniq in order to do not cache the same directories twice
-    return cacheFoldersPaths.filter((0, util_1.unique)());
+    return cacheFoldersPaths.filter((0, exports.unique)());
 });
 /**
  * Finds the cache directories configured for the repo ignoring cache-dependency-path
@@ -89404,16 +89405,14 @@ exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Outputs = exports.State = exports.LockType = void 0;
-var LockType;
-(function (LockType) {
-    LockType["Npm"] = "npm";
-    LockType["Pnpm"] = "pnpm";
-    LockType["Yarn"] = "yarn";
-})(LockType || (exports.LockType = LockType = {}));
+exports.Outputs = exports.State = exports.isPackageManager = void 0;
+const isPackageManager = (pm) => {
+    return pm === 'npm' || pm === 'yarn' || pm === 'pnpm';
+};
+exports.isPackageManager = isPackageManager;
 var State;
 (function (State) {
-    State["CachePackageManager"] = "SETUP_NODE_CACHE_PACKAGE_MANAGER";
+    State["CachePackageManager"] = "CACHE_NODE_PACKAGE_MANAGER";
     State["CachePrimaryKey"] = "CACHE_KEY";
     State["CacheMatchedKey"] = "CACHE_RESULT";
     State["CachePaths"] = "CACHE_PATHS";
@@ -89426,7 +89425,7 @@ var Outputs;
 
 /***/ }),
 
-/***/ 4527:
+/***/ 787:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -89454,117 +89453,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.unique = exports.printEnvDetailsAndSetOutput = exports.getNodeVersionFromFile = void 0;
+const cache_save_1 = __nccwpck_require__(3579);
 const core = __importStar(__nccwpck_require__(7484));
-const exec = __importStar(__nccwpck_require__(5236));
-const io = __importStar(__nccwpck_require__(4994));
-const fs_1 = __importDefault(__nccwpck_require__(9896));
-const path_1 = __importDefault(__nccwpck_require__(6928));
-function getNodeVersionFromFile(versionFilePath) {
-    var _a, _b, _c, _d, _e;
-    if (!fs_1.default.existsSync(versionFilePath)) {
-        throw new Error(`The specified node version file at: ${versionFilePath} does not exist`);
-    }
-    const contents = fs_1.default.readFileSync(versionFilePath, 'utf8');
-    // Try parsing the file as an NPM `package.json` file.
-    try {
-        const manifest = JSON.parse(contents);
-        // Presume package.json file.
-        if (typeof manifest === 'object' && !!manifest) {
-            // Support Volta.
-            // See https://docs.volta.sh/guide/understanding#managing-your-project
-            if ((_a = manifest.volta) === null || _a === void 0 ? void 0 : _a.node) {
-                return manifest.volta.node;
-            }
-            if ((_b = manifest.engines) === null || _b === void 0 ? void 0 : _b.node) {
-                return manifest.engines.node;
-            }
-            // Support Volta workspaces.
-            // See https://docs.volta.sh/advanced/workspaces
-            if ((_c = manifest.volta) === null || _c === void 0 ? void 0 : _c.extends) {
-                const extendedFilePath = path_1.default.resolve(path_1.default.dirname(versionFilePath), manifest.volta.extends);
-                core.info('Resolving node version from ' + extendedFilePath);
-                return getNodeVersionFromFile(extendedFilePath);
-            }
-            // If contents are an object, we parsed JSON
-            // this can happen if node-version-file is a package.json
-            // yet contains no volta.node or engines.node
-            //
-            // If node-version file is _not_ JSON, control flow
-            // will not have reached these lines.
-            //
-            // And because we've reached here, we know the contents
-            // *are* JSON, so no further string parsing makes sense.
-            return null;
-        }
-    }
-    catch (_f) {
-        core.info('Node version file is not JSON file');
-    }
-    const found = contents.match(/^(?:node(js)?\s+)?v?(?<version>[^\s]+)$/m);
-    return (_e = (_d = found === null || found === void 0 ? void 0 : found.groups) === null || _d === void 0 ? void 0 : _d.version) !== null && _e !== void 0 ? _e : contents.trim();
-}
-exports.getNodeVersionFromFile = getNodeVersionFromFile;
-function printEnvDetailsAndSetOutput() {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.startGroup('Environment details');
-        const promises = ['node', 'npm', 'yarn'].map((tool) => __awaiter(this, void 0, void 0, function* () {
-            const pathTool = yield io.which(tool, false);
-            const output = pathTool ? yield getToolVersion(tool, ['--version']) : '';
-            return { tool, output };
-        }));
-        const tools = yield Promise.all(promises);
-        tools.forEach(({ tool, output }) => {
-            if (tool === 'node') {
-                core.setOutput(`${tool}-version`, output);
-            }
-            core.info(`${tool}: ${output}`);
-        });
-        core.endGroup();
-    });
-}
-exports.printEnvDetailsAndSetOutput = printEnvDetailsAndSetOutput;
-function getToolVersion(tool, options) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { stdout, stderr, exitCode } = yield exec.getExecOutput(tool, options, {
-                ignoreReturnCode: true,
-                silent: true
-            });
-            if (exitCode > 0) {
-                core.info(`[warning]${stderr}`);
-                return '';
-            }
-            return stdout.trim();
-        }
-        catch (err) {
-            return '';
-        }
-    });
-}
-const unique = () => {
-    const encountered = new Set();
-    return (value) => {
-        if (encountered.has(value))
-            return false;
-        encountered.add(value);
-        return true;
-    };
-};
-exports.unique = unique;
+// Catch and log any unhandled exceptions.  These exceptions can leak out of the uploadChunk method in
+// @actions/toolkit when a failed upload closes the file descriptor causing any in-process reads to
+// throw an uncaught exception.  Instead of failing this action, just warn.
+process.on('uncaughtException', e => {
+    const warningPrefix = '[warning]';
+    core.info(`${warningPrefix}${e.message}`);
+});
+void (0, cache_save_1.cacheSave)(true);
 
 
 /***/ }),
@@ -91524,7 +91423,7 @@ module.exports = /*#__PURE__*/JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(3579);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(787);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()

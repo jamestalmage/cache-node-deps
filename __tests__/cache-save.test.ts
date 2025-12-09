@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 import * as utils from '../src/cache-utils';
-import {run} from '../src/cache-save';
+import {cacheSave} from '../src/cache-save';
 import {State} from '../src/constants';
 
 describe('run', () => {
@@ -80,7 +80,7 @@ describe('run', () => {
     it('Package manager is not provided, skip caching', async () => {
       inputs['cache'] = '';
 
-      await run();
+      await cacheSave();
 
       expect(setFailedSpy).not.toHaveBeenCalled();
       expect(infoSpy).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe('run', () => {
         key === State.CachePackageManager ? inputs['cache'] : ''
       );
 
-      await run();
+      await cacheSave();
 
       expect(setFailedSpy).not.toHaveBeenCalled();
       expect(infoSpy).not.toHaveBeenCalled();
@@ -120,7 +120,7 @@ describe('run', () => {
               : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -144,7 +144,7 @@ describe('run', () => {
               : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -169,7 +169,7 @@ describe('run', () => {
       );
       getCommandOutputSpy.mockImplementationOnce(() => `${commonPath}/npm`);
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -190,7 +190,7 @@ describe('run', () => {
               : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -215,7 +215,7 @@ describe('run', () => {
                 : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -245,7 +245,7 @@ describe('run', () => {
                 : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -275,7 +275,7 @@ describe('run', () => {
                 : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -305,7 +305,7 @@ describe('run', () => {
                 : 'not expected'
       );
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -338,7 +338,7 @@ describe('run', () => {
         return -1;
       });
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
@@ -371,7 +371,7 @@ describe('run', () => {
         throw new cache.ValidationError('Validation failed');
       });
 
-      await run();
+      await cacheSave();
 
       expect(getInputSpy).not.toHaveBeenCalled();
       expect(getStateSpy).toHaveBeenCalledTimes(4);
