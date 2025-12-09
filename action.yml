@@ -1,5 +1,5 @@
-name: 'Setup Node.js environment'
-description: 'Setup a Node.js environment by adding problem matchers and optionally downloading and adding it to the PATH.'
+name: 'Cache Node.js dependencies (and only that!)'
+description: 'Cache node dependencies. Intentionally does not include setup of node environment.'
 author: 'GitHub'
 inputs:
   package-manager:
